@@ -6,32 +6,11 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 16:50:00 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/26 12:04:03 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/26 14:04:41 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-
-int	get_fd_in(char *path)
-{
-	int	infile;
-
-	infile = open(path, O_RDONLY);
-	if (infile == -1)
-		handle_err(errno, "error opening infile");
-	return (infile);
-}
-
-int	get_fd_out(char *path)
-{
-	int	outfile;
-
-	outfile = open(path, O_CREAT | O_TRUNC | O_WRONLY,
-			S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	if (outfile == -1)
-		handle_err(errno, "error opening outfile");
-	return (outfile);
-}
 
 void	handle_err(int my_errno, char *msg)
 {
@@ -39,7 +18,7 @@ void	handle_err(int my_errno, char *msg)
 	if (my_errno)
 		perror(msg);
 	else
-		ft_printf("%s\n", msg);
+		ft_printerr("%s\n", msg);
 	exit(EXIT_FAILURE);
 }
 
