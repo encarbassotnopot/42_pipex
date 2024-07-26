@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 16:50:00 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/26 14:22:25 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/26 17:01:30 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,5 +51,4 @@ void	close_fds(int fd[])
 		handle_err(0, "error closing fd[0]");
 	if (close(fd[1]) == -1)
 		handle_err(0, "error closing fd[1]");
-	free(fd);
 }
