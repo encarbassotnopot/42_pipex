@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 14:57:14 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/26 17:06:15 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/26 17:17:35 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,10 +80,10 @@ int	main(int argc, char *argv[], char **envp)
 
 	if (argc != 5)
 		handle_err(0, "Wrong number of args");
-	if (pipe(pipefd) == -1)
-		handle_err(errno, "pipe");
 	files[0] = get_fd_in(argv[1]);
 	files[1] = get_fd_out(argv[4]);
+	if (pipe(pipefd) == -1)
+		handle_err(errno, "pipe");
 	do_fork(files, pipefd, argv[2], envp);
 	do_fork(pipefd, files, argv[3], envp);
 }

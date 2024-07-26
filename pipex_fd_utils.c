@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 16:50:00 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/26 17:01:30 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/26 17:21:49 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int	get_fd_in(char *path)
 
 	infile = open(path, O_RDONLY);
 	if (infile == -1)
-		handle_err(errno, "error opening infile");
+		perror("error opening infile");
 	return (infile);
 }
 
@@ -29,7 +29,7 @@ int	get_fd_out(char *path)
 	outfile = open(path, O_CREAT | O_TRUNC | O_WRONLY,
 			S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if (outfile == -1)
-		handle_err(errno, "error opening outfile");
+		perror("error opening outfile");
 	return (outfile);
 }
 
@@ -48,7 +48,7 @@ int	*fd_pair(int read, int write)
 void	close_fds(int fd[])
 {
 	if (close(fd[0]) == -1)
-		handle_err(0, "error closing fd[0]");
+		perror("error closing fd[0]");
 	if (close(fd[1]) == -1)
-		handle_err(0, "error closing fd[1]");
+		perror("error closing fd[1]");
 }
