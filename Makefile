@@ -1,4 +1,4 @@
-SRC_FILES = $(wildcard *.c)
+SRC_FILES = pipex.c pipex_utils.c pipex_fd_utils.c
 OBJ_FILES = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRC_FILES))
 HDR_FILES = 
 

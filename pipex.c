@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 14:57:14 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/26 17:17:35 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/26 17:28:29 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,13 +63,12 @@ void	fork_manager(int fd_in[], int fd_out[], char *command, char **envp)
 
 void	do_fork(int fd_in[], int fd_out[], char *command, char **envp)
 {
-	int		proc_stat;
-	pid_t	pid_head;
+	pid_t	pid_child;
 
-	pid_head = fork();
-	if (pid_head == -1)
+	pid_child = fork();
+	if (pid_child == -1)
 		handle_err(errno, "fork error");
-	else if (pid_head == 0)
+	else if (pid_child == 0)
 		fork_manager(fd_in, fd_out, command, envp);
 }
 
