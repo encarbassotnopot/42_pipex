@@ -6,35 +6,38 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 14:57:14 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/25 17:32:37 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/26 12:17:31 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	fork_head(int infile, int outfile, char *exe, char **envp)
+void	fork_head(int infile, int outfile, char *command, char **envp)
 {
 	char	**args;
+	char	*exe;
+	int		my_errno;
 
-	args = ft_split(exe, ' ');
+	args = ft_split(command, ' ');
 	if (!args)
 		handle_err(0, "error splitting args");
-	char *found_exe = get_exe(get_path(envp), args[0]);
-	// aconseguir executable real, dup2 de infile, i jo què sé.
 	ft_printf("testing fds 1\n");
 	if (dup2(infile, STDIN_FILENO) == -1)
 		handle_err(errno, "dup2 error");
 	if (dup2(outfile, STDOUT_FILENO) == -1)
 		handle_err(errno, "dup2 error");
-	if (execve(found_exe, args, envp) == -1)
-		handle_err(errno, "execve error");
-	ft_printf("testing fds 2\n");
+	exe = get_exe(get_path(envp), args[0]);
+	printf("exe is: %s\n", exe);
+	execve(exe, args, envp);
+	my_errno = errno;
+	if (exe != args[0])
+		free(exe);
+	ft_free_arr((void **) args);
+	handle_err(my_errno, "execve error");
 }
 
 int	main(int argc, char *argv[], char **envp)
 {
-	char	*path;
-	char	*pwd;
 	int		proc_stat;
 	pid_t	pid_head;
 
@@ -42,8 +45,6 @@ int	main(int argc, char *argv[], char **envp)
 	proc_stat = 0;
 	if (argc != 4)
 		handle_err(0, "Wrong number of args");
-	path = get_path(envp);
-	pwd = get_pwd(envp);
 	infile = get_fd_in(argv[1]);
 	outfile = get_fd_out(argv[3]);
 	// HEAD

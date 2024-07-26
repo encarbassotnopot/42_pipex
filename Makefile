@@ -9,9 +9,9 @@ BUILD_DIR = build
 NAME = pipex
 CFLAGS = -Wall -Wextra -Fsanitize=address
 
-CC = cc
-LIBFT = libft
-FT_PRINTF = ft_printf
+CC = clang
+LIBFT = $(CURDIR)/libft
+FT_PRINTF = $(CURDIR)/ft_printf
 
 all: $(NAME)
 
