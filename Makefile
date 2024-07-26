@@ -7,7 +7,7 @@ LIB_FLAGS = -rpath $(LIBFT) -L $(LIBFT) -lft -rpath $(FT_PRINTF) -L $(FT_PRINTF)
 BUILD_DIR = build
 
 NAME = pipex
-CFLAGS = -Wall -Wextra -Fsanitize=address
+CFLAGS = -Wall -Wextra -Fsanitize=address -g
 
 CC = clang
 LIBFT = $(CURDIR)/libft

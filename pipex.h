@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 15:54:26 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/26 14:15:27 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/26 17:04:57 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 void	handle_err(int my_errno, char *msg);
 char	*get_path(char **envp);
 char	*get_exe(char *path, char *name);
-void	fork_manager(int fds[], char *exe, char **envp);
+void	fork_manager(int fd_in[], int fd_out[], char *exe, char **envp);
 int		main(int argc, char *argv[], char **envp);
 int		get_fd_in(char *path);
 int		get_fd_out(char *path);

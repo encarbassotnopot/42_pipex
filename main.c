@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 14:57:14 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/26 14:38:14 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/26 17:06:15 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,26 +34,26 @@ void	run_exe(char *command, char **envp)
 /**
  * Manages a command in the chain and its fds and dups.
  */
-void	fork_manager(int fds[], char *command, char **envp)
+void	fork_manager(int fd_in[], int fd_out[], char *command, char **envp)
 {
 	int	proc_stat;
 	int	pid_exe;
 
-	if (dup2(fds[0], STDIN_FILENO) == -1)
+	close(fd_in[1]);
+	close(fd_out[0]);
+	if (dup2(fd_in[0], STDIN_FILENO) == -1)
 		handle_err(errno, "dup2 error");
-	if (dup2(fds[1], STDOUT_FILENO) == -1)
+	if (dup2(fd_out[1], STDOUT_FILENO) == -1)
 		handle_err(errno, "dup2 error");
 	pid_exe = fork();
 	if (pid_exe == -1)
 		handle_err(errno, "fork error");
 	if (pid_exe == 0)
 		run_exe(command, envp);
+	close(fd_in[0]);
+	close(fd_out[1]);
 	if (waitpid(pid_exe, &proc_stat, 0) == -1)
-	{
-		close_fds(fds);
 		handle_err(errno, "waitpid error");
-	}
-	close_fds(fds);
 	ft_printerr("process exe %d returned %d\n", pid_exe,
 		WEXITSTATUS(proc_stat));
 	if (!WIFEXITED(proc_stat))
@@ -61,7 +61,7 @@ void	fork_manager(int fds[], char *command, char **envp)
 	exit(EXIT_SUCCESS);
 }
 
-void	head(char **argv, char **envp, int pair[])
+void	do_fork(int fd_in[], int fd_out[], char *command, char **envp)
 {
 	int		proc_stat;
 	pid_t	pid_head;
@@ -70,46 +70,20 @@ void	head(char **argv, char **envp, int pair[])
 	if (pid_head == -1)
 		handle_err(errno, "fork error");
 	else if (pid_head == 0)
-		fork_manager(pair, argv[2], envp);
-	if (waitpid(pid_head, &proc_stat, 0) == -1)
-		handle_err(errno, "waitpid error");
-	ft_printerr("process head %d returned %d\n", pid_head,
-		WEXITSTATUS(proc_stat));
-	if (!WIFEXITED(proc_stat))
-		handle_err(0, "Error: Process didn't terminate properly");
-}
-
-void	tail(char **argv, char **envp, int pair[])
-{
-	int		proc_stat;
-	pid_t	pid_head;
-
-	pid_head = fork();
-	if (pid_head == -1)
-		handle_err(errno, "fork error");
-	else if (pid_head == 0)
-		fork_manager(pair, argv[3], envp);
-	if (waitpid(pid_head, &proc_stat, 0) == -1)
-		handle_err(errno, "waitpid error");
-	ft_printerr("process head %d returned %d\n", pid_head,
-		WEXITSTATUS(proc_stat));
-	if (!WIFEXITED(proc_stat))
-		handle_err(0, "Error: Process didn't terminate properly");
+		fork_manager(fd_in, fd_out, command, envp);
 }
 
 int	main(int argc, char *argv[], char **envp)
 {
-	int	*pairs[2];
+	int	files[2];
 	int	pipefd[2];
 
 	if (argc != 5)
 		handle_err(0, "Wrong number of args");
-	if  (pipe(pipefd) == -1)
+	if (pipe(pipefd) == -1)
 		handle_err(errno, "pipe");
-	pairs[0] = fd_pair(get_fd_in(argv[1]), pipefd[1]);
-	pairs[1] = fd_pair(pipefd[0], get_fd_out(argv[4]));
-	head(argv, envp, pairs[0]);
-	tail(argv, envp, pairs[1]);
-	close_fds(pairs[0]);
-	close_fds(pairs[1]);
+	files[0] = get_fd_in(argv[1]);
+	files[1] = get_fd_out(argv[4]);
+	do_fork(files, pipefd, argv[2], envp);
+	do_fork(pipefd, files, argv[3], envp);
 }
