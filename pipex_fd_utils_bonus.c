@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 16:50:00 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/29 10:49:58 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/29 14:20:35 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,22 +33,13 @@ int	get_fd_out(char *path)
 	return (outfile);
 }
 
-int	*fd_pair(int read, int write)
+void	close_pipe(int *fd)
 {
-	int	*pair;
+	int	i;
 
-	pair = ft_calloc(2, sizeof(int));
-	if (!pair)
-		handle_err(ENOMEM, 0);
-	pair[0] = read;
-	pair[1] = write;
-	return (pair);
-}
-
-void	close_fds(int fd[])
-{
-	if (close(fd[0]) == -1)
-		perror("error closing fd[0]");
-	if (close(fd[1]) == -1)
-		perror("error closing fd[1]");
+	i = -1;
+	while (++i < 2)
+		if (fd[i])
+			if (close(fd[i]) == -1)
+				perror("error closing fd");
 }
