@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 14:57:14 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/29 13:09:16 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/29 14:47:01 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,44 +58,57 @@ void	fork_manager(int fd_in, int fd_out, char *command, char **envp)
 	exit(EXIT_SUCCESS);
 }
 
-void	do_fork(int fd_in, int fd_out, char *command, char **envp)
+void	do_fork(int ***fds, char *command, char **envp)
 {
 	pid_t	pid_child;
+	int		fd_in;
+	int		fd_out;
 
+	fd_in = (*fds)[P_READ][P_READ];
+	fd_out = (*fds)[P_WRITE][P_WRITE];
 	pid_child = fork();
 	if (pid_child == -1)
 		handle_err(errno, "fork error");
 	else if (pid_child == 0)
+	{
+		/*if (fd_in[P_WRITE])*/
+		/*	close(fd_in[P_WRITE]);*/
+		/*if (fd_out[P_READ])*/
+		/*	close(fd_out[P_READ]);*/
+		close_pipe((*fds)[P_READ]);
+		close_pipe((*fds)[P_WRITE]);
+		ft_free_arr((void **)*fds);
 		fork_manager(fd_in, fd_out, command, envp);
+	}
+	waitpid(pid_child, 0, 0);
 }
 
 int	main(int argc, char *argv[], char **envp)
 {
-	int	files[2];
 	int	**pipes;
 	int	i;
 
-	i = 2;
-	pipes = ft_calloc(3, sizeof(int *));
-	pipes[P_WRITE] = ft_calloc(3, sizeof(int));
+	i = 1;
 	if (argc < 5)
 		handle_err(0, "Wrong number of args");
-	files[P_READ] = get_fd_in(argv[1]);
-	files[P_WRITE] = get_fd_out(argv[argc - 1]);
-	if (pipe(pipes[P_WRITE]) == -1)
-		handle_err(errno, "pipe");
-	do_fork(files[P_READ], pipes[P_WRITE][P_WRITE], argv[2], envp);
+	pipes = ft_calloc(3, sizeof(int *));
+	pipes[P_WRITE] = ft_calloc(3, sizeof(int));
+	pipes[P_WRITE][P_READ] = get_fd_in(argv[1]);
 	while (++i <= argc - 2)
 	{
 		pipes[P_READ] = pipes[P_WRITE];
-		// hauria de poder fer això
-		close(pipes[P_READ][P_WRITE]);
+		pipes[P_WRITE] = ft_calloc(3, sizeof(int));
 		if (i == argc - 2)
 			break ;
-		pipes[P_WRITE] = ft_calloc(3, sizeof(int));
 		if (pipe(pipes[P_WRITE]) == -1)
 			handle_err(errno, "pipe");
-		do_fork(pipes[P_READ][P_READ], pipes[P_WRITE][P_WRITE], argv[i], envp);
+		do_fork(&pipes, argv[i], envp);
+		close_pipe(pipes[P_READ]);
+		free(pipes[P_READ]);
 	}
-	do_fork(pipes[P_READ][P_READ], files[P_WRITE], argv[argc - 2], envp);
+	pipes[P_WRITE][P_WRITE] = get_fd_out(argv[argc - 1]);
+	do_fork(&pipes, argv[argc - 2], envp);
+	close_pipe(pipes[P_READ]);
+	close_pipe(pipes[P_WRITE]);
+	ft_free_arr((void **)pipes);
 }
