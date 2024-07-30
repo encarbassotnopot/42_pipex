@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 14:57:14 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/30 11:36:52 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/30 12:50:27 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,10 @@ void	run_exe(char *command, char **envp, int fds[])
 	exe = get_exe(get_path(envp), args[0]);
 	if (!exe)
 	{
-		ft_free_arr((void **)args);
 		close_pipe(fds);
 		ft_printerr("command not found: %s\n", args[0]);
+		ft_free_arr((void **)args);
+		exit(EXIT_FAILURE);
 	}
 	execve(exe, args, envp);
 	my_errno = errno;
@@ -48,10 +49,10 @@ void	fork_manager(int fds[], char *command, char **envp)
 	int	proc_stat;
 	int	pid_exe;
 
-	if (dup2(fds[P_READ], STDIN_FILENO) == -1)
-		handle_err(errno, "dup2 error");
-	if (dup2(fds[P_WRITE], STDOUT_FILENO) == -1)
-		handle_err(errno, "dup2 error");
+	if (fds[P_READ] > 0 && dup2(fds[P_READ], STDIN_FILENO) == -1)
+		perror("dup2 error");
+	if (fds[P_WRITE] > 0 && dup2(fds[P_WRITE], STDOUT_FILENO) == -1)
+		perror("dup2 error");
 	pid_exe = fork();
 	if (pid_exe == -1)
 		handle_err(errno, "fork error");
@@ -60,8 +61,6 @@ void	fork_manager(int fds[], char *command, char **envp)
 	close_pipe(fds);
 	if (waitpid(pid_exe, &proc_stat, 0) == -1)
 		handle_err(errno, "waitpid error");
-	if (!WIFEXITED(proc_stat))
-		handle_err(0, "Error: Process didn't terminate properly.");
 	exit(EXIT_SUCCESS);
 }
 
@@ -77,14 +76,19 @@ void	do_fork(int ***fds, char *command, char **envp)
 		handle_err(errno, "fork error");
 	else if (pid_child == 0)
 	{
-		if ((*fds)[P_WRITE][P_READ])
+		if ((*fds)[P_WRITE][P_READ] > 0)
 			close((*fds)[P_WRITE][P_READ]);
-		if ((*fds)[P_READ][P_WRITE])
+		if ((*fds)[P_READ][P_WRITE] > 0)
 			close((*fds)[P_READ][P_WRITE]);
 		ft_free_arr((void **)*fds);
 		fork_manager(my_fds, command, envp);
 		close_pipe((*fds)[P_READ]);
 		close_pipe((*fds)[P_WRITE]);
+	}
+	else
+	{
+		close_pipe(pipes[P_READ]);
+		free(pipes[P_READ]);
 	}
 }
 
@@ -108,8 +112,6 @@ int	main(int argc, char *argv[], char **envp)
 		if (pipe(pipes[P_WRITE]) == -1)
 			handle_err(errno, "pipe");
 		do_fork(&pipes, argv[i], envp);
-		close_pipe(pipes[P_READ]);
-		free(pipes[P_READ]);
 	}
 	pipes[P_WRITE][P_WRITE] = get_fd_out(argv[argc - 1]);
 	do_fork(&pipes, argv[argc - 2], envp);
