@@ -6,11 +6,11 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 16:50:00 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/26 14:04:41 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/30 09:46:12 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "pipex_bonus.h"
 
 void	handle_err(int my_errno, char *msg)
 {
@@ -50,6 +50,7 @@ char	*get_exe(char *path, char *name)
 		file = ft_strjoinc(paths[i], name, '/');
 		if (access(file, X_OK) == 0)
 			break ;
+		free(file);
 	}
 	if (!paths[i])
 		file = NULL;

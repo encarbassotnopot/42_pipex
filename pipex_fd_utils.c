@@ -6,11 +6,11 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 16:50:00 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/26 17:21:49 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/30 13:01:07 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "pipex_bonus.h"
 
 int	get_fd_in(char *path)
 {
@@ -33,22 +33,19 @@ int	get_fd_out(char *path)
 	return (outfile);
 }
 
-int	*fd_pair(int read, int write)
+void	close_pipe(int *fd)
 {
-	int	*pair;
+	int	i;
 
-	pair = ft_calloc(2, sizeof(int));
-	if (!pair)
-		handle_err(ENOMEM, 0);
-	pair[0] = read;
-	pair[1] = write;
-	return (pair);
+	i = -1;
+	while (++i < 2)
+		if (fd[i] > 0)
+			if (close(fd[i]) == -1)
+				perror("error closing fd");
 }
 
-void	close_fds(int fd[])
+void	close_free_pipe(int *fd)
 {
-	if (close(fd[0]) == -1)
-		perror("error closing fd[0]");
-	if (close(fd[1]) == -1)
-		perror("error closing fd[1]");
+	close_pipe(fd);
+	free(fd);
 }
