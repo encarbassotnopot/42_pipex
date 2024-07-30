@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 16:50:00 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/29 10:50:03 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/30 09:46:12 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ char	*get_exe(char *path, char *name)
 		file = ft_strjoinc(paths[i], name, '/');
 		if (access(file, X_OK) == 0)
 			break ;
+		free(file);
 	}
 	if (!paths[i])
 		file = NULL;

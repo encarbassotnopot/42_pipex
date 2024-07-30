@@ -6,13 +6,13 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 14:57:14 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/30 09:19:55 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/30 11:36:52 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
-void	run_exe(char *command, char **envp)
+void	run_exe(char *command, char **envp, int fds[])
 {
 	char	**args;
 	char	*exe;
@@ -20,10 +20,20 @@ void	run_exe(char *command, char **envp)
 
 	args = ft_split(command, ' ');
 	if (!args)
+	{
 		handle_err(0, "error splitting args");
+		close_pipe(fds);
+	}
 	exe = get_exe(get_path(envp), args[0]);
+	if (!exe)
+	{
+		ft_free_arr((void **)args);
+		close_pipe(fds);
+		ft_printerr("command not found: %s\n", args[0]);
+	}
 	execve(exe, args, envp);
 	my_errno = errno;
+	close_pipe(fds);
 	if (exe != args[0])
 		free(exe);
 	ft_free_arr((void **)args);
@@ -33,22 +43,21 @@ void	run_exe(char *command, char **envp)
 /**
  * Manages a command in the chain and its fds and dups.
  */
-void	fork_manager(int fd_in, int fd_out, char *command, char **envp)
+void	fork_manager(int fds[], char *command, char **envp)
 {
 	int	proc_stat;
 	int	pid_exe;
 
-	if (dup2(fd_in, STDIN_FILENO) == -1)
+	if (dup2(fds[P_READ], STDIN_FILENO) == -1)
 		handle_err(errno, "dup2 error");
-	if (dup2(fd_out, STDOUT_FILENO) == -1)
+	if (dup2(fds[P_WRITE], STDOUT_FILENO) == -1)
 		handle_err(errno, "dup2 error");
 	pid_exe = fork();
 	if (pid_exe == -1)
 		handle_err(errno, "fork error");
 	if (pid_exe == 0)
-		run_exe(command, envp);
-	close(fd_in);
-	close(fd_out);
+		run_exe(command, envp, fds);
+	close_pipe(fds);
 	if (waitpid(pid_exe, &proc_stat, 0) == -1)
 		handle_err(errno, "waitpid error");
 	if (!WIFEXITED(proc_stat))
@@ -59,11 +68,10 @@ void	fork_manager(int fd_in, int fd_out, char *command, char **envp)
 void	do_fork(int ***fds, char *command, char **envp)
 {
 	pid_t	pid_child;
-	int		fd_in;
-	int		fd_out;
+	int		my_fds[2];
 
-	fd_in = (*fds)[P_READ][P_READ];
-	fd_out = (*fds)[P_WRITE][P_WRITE];
+	my_fds[P_READ] = (*fds)[P_READ][P_READ];
+	my_fds[P_WRITE] = (*fds)[P_WRITE][P_WRITE];
 	pid_child = fork();
 	if (pid_child == -1)
 		handle_err(errno, "fork error");
@@ -74,7 +82,7 @@ void	do_fork(int ***fds, char *command, char **envp)
 		if ((*fds)[P_READ][P_WRITE])
 			close((*fds)[P_READ][P_WRITE]);
 		ft_free_arr((void **)*fds);
-		fork_manager(fd_in, fd_out, command, envp);
+		fork_manager(my_fds, command, envp);
 		close_pipe((*fds)[P_READ]);
 		close_pipe((*fds)[P_WRITE]);
 	}
@@ -87,7 +95,7 @@ int	main(int argc, char *argv[], char **envp)
 
 	i = 1;
 	if (argc < 5)
-		handle_err(0, "Wrong number of args");
+		handle_err(0, "wrong number of args");
 	pipes = ft_calloc(3, sizeof(int *));
 	pipes[P_WRITE] = ft_calloc(3, sizeof(int));
 	pipes[P_WRITE][P_READ] = get_fd_in(argv[1]);
