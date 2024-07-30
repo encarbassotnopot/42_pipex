@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 16:50:00 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/29 14:20:35 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/30 11:35:56 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	close_pipe(int *fd)
 
 	i = -1;
 	while (++i < 2)
-		if (fd[i])
+		if (fd[i] > 0)
 			if (close(fd[i]) == -1)
 				perror("error closing fd");
 }
