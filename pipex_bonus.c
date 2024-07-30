@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 14:57:14 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/29 14:47:01 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/30 09:19:55 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ void	run_exe(char *command, char **envp)
 	if (!args)
 		handle_err(0, "error splitting args");
 	exe = get_exe(get_path(envp), args[0]);
-	ft_printerr("exe is: %s\n", exe);
 	execve(exe, args, envp);
 	my_errno = errno;
 	if (exe != args[0])
@@ -39,7 +38,6 @@ void	fork_manager(int fd_in, int fd_out, char *command, char **envp)
 	int	proc_stat;
 	int	pid_exe;
 
-	ft_printerr("command %s in: %d, out %d\n", command, fd_in, fd_out);
 	if (dup2(fd_in, STDIN_FILENO) == -1)
 		handle_err(errno, "dup2 error");
 	if (dup2(fd_out, STDOUT_FILENO) == -1)
@@ -71,16 +69,15 @@ void	do_fork(int ***fds, char *command, char **envp)
 		handle_err(errno, "fork error");
 	else if (pid_child == 0)
 	{
-		/*if (fd_in[P_WRITE])*/
-		/*	close(fd_in[P_WRITE]);*/
-		/*if (fd_out[P_READ])*/
-		/*	close(fd_out[P_READ]);*/
-		close_pipe((*fds)[P_READ]);
-		close_pipe((*fds)[P_WRITE]);
+		if ((*fds)[P_WRITE][P_READ])
+			close((*fds)[P_WRITE][P_READ]);
+		if ((*fds)[P_READ][P_WRITE])
+			close((*fds)[P_READ][P_WRITE]);
 		ft_free_arr((void **)*fds);
 		fork_manager(fd_in, fd_out, command, envp);
+		close_pipe((*fds)[P_READ]);
+		close_pipe((*fds)[P_WRITE]);
 	}
-	waitpid(pid_child, 0, 0);
 }
 
 int	main(int argc, char *argv[], char **envp)
