@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 14:57:14 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/30 12:50:27 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/30 13:01:41 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,11 +85,6 @@ void	do_fork(int ***fds, char *command, char **envp)
 		close_pipe((*fds)[P_READ]);
 		close_pipe((*fds)[P_WRITE]);
 	}
-	else
-	{
-		close_pipe(pipes[P_READ]);
-		free(pipes[P_READ]);
-	}
 }
 
 int	main(int argc, char *argv[], char **envp)
@@ -112,6 +107,7 @@ int	main(int argc, char *argv[], char **envp)
 		if (pipe(pipes[P_WRITE]) == -1)
 			handle_err(errno, "pipe");
 		do_fork(&pipes, argv[i], envp);
+		close_free_pipe(pipes[P_READ]);
 	}
 	pipes[P_WRITE][P_WRITE] = get_fd_out(argv[argc - 1]);
 	do_fork(&pipes, argv[argc - 2], envp);

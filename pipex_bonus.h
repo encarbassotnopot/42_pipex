@@ -6,7 +6,7 @@
 /*   By: ecoma-ba <ecoma-ba@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 15:54:26 by ecoma-ba          #+#    #+#             */
-/*   Updated: 2024/07/29 14:38:39 by ecoma-ba         ###   ########.fr       */
+/*   Updated: 2024/07/30 13:01:22 by ecoma-ba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ int		get_fd_in(char *path);
 int		get_fd_out(char *path);
 int		*fd_pair(int read, int write);
 void	close_pipe(int *fd);
+void	close_free_pipe(int *fd);
 void	handle_err(int my_errno, char *msg);
 char	*get_path(char **envp);
 char	*get_exe(char *path, char *name);
